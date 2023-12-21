@@ -1,7 +1,7 @@
 package snoti
 
 import (
-	"github.com/project-flogo/core/data/coerce"
+	"encoding/json"
 )
 
 var defaultEventTypes = []string{
@@ -28,10 +28,16 @@ type Output struct {
 }
 
 func (o *Output) ToMap() map[string]interface{} {
-	return map[string]interface{}{"message": o.Message}
+	values := make(map[string]interface{})
+	_ = json.Unmarshal([]byte(o.Message), &values)
+	return values
 }
 
-func (o *Output) FromMap(values map[string]interface{}) (err error) {
-	o.Message, err = coerce.ToString(values["message"])
-	return
+func (o *Output) FromMap(values map[string]interface{}) error {
+	message, err := json.Marshal(values)
+	if err != nil {
+		return err
+	}
+	o.Message = string(message)
+	return nil
 }
