@@ -1,9 +1,5 @@
 package snoti
 
-import (
-	"encoding/json"
-)
-
 var defaultEventTypes = []string{
 	"device.online",
 	"device.offline",
@@ -20,24 +16,14 @@ type Settings struct {
 	SubKey     string `md:"subKey,required"`
 }
 
-type HandlerSettings struct {
-}
-
 type Output struct {
-	Message string `md:"message"`
-}
-
-func (o *Output) ToMap() map[string]interface{} {
-	values := make(map[string]interface{})
-	_ = json.Unmarshal([]byte(o.Message), &values)
-	return values
-}
-
-func (o *Output) FromMap(values map[string]interface{}) error {
-	message, err := json.Marshal(values)
-	if err != nil {
-		return err
-	}
-	o.Message = string(message)
-	return nil
+	Cmd        string                 `md:"cmd"`
+	MsgId      string                 `md:"msg_id"`
+	DeliveryId int64                  `md:"delivery_id"`
+	EventType  string                 `md:"event_type"`
+	ProductKey string                 `md:"product_key"`
+	DeviceId   string                 `md:"did"`
+	DeviceMac  string                 `md:"mac"`
+	Data       map[string]interface{} `md:"data"`
+	CreatedAt  float64                `md:"created_at"`
 }

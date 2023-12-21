@@ -101,7 +101,6 @@ func (c *client) Read() []byte {
 }
 
 func (c *client) read(ctx context.Context) {
-	buff := make([]byte, 1024)
 	for {
 		select {
 		case <-ctx.Done():
@@ -113,6 +112,7 @@ func (c *client) read(ctx context.Context) {
 			c.logger.Errorf("failed to set read deadline: %v", err)
 			continue
 		}
+		buff := make([]byte, 1024)
 		n, err := c.tlsConn.Read(buff)
 		if err != nil || n == 0 {
 			continue

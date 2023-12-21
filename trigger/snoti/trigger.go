@@ -2,6 +2,9 @@ package snoti
 
 import (
 	"context"
+	"encoding/json"
+	"runtime"
+	"sync"
 	"time"
 
 	"github.com/project-flogo/core/data/metadata"
@@ -9,7 +12,7 @@ import (
 	"github.com/project-flogo/core/trigger"
 )
 
-var triggerMd = trigger.NewMetadata(&Settings{}, &HandlerSettings{}, &Output{})
+var triggerMd = trigger.NewMetadata(&Settings{}, &Output{})
 
 func init() {
 	_ = trigger.Register(&Trigger{}, &Factory{})
@@ -37,12 +40,12 @@ func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
 
 // Trigger is a kafka trigger
 type Trigger struct {
-	settings *Settings
-	conn     Connection
-	shutdown chan struct{}
-	msgChs   map[string]chan []byte
-	handlers []trigger.Handler
-	logger   log.Logger
+	settings  *Settings
+	conn      Connection
+	shutdown  chan struct{}
+	messageCh chan []byte
+	handlers  []trigger.Handler
+	logger    log.Logger
 }
 
 // Initialize initializes the trigger
@@ -55,15 +58,14 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) (err error) {
 
 // Start starts the kafka trigger
 func (t *Trigger) Start() error {
-	go t.conn.Connect()
-
 	t.shutdown = make(chan struct{})
-	t.msgChs = make(map[string]chan []byte)
-	for _, handler := range t.handlers {
-		t.msgChs[handler.Name()] = make(chan []byte, 128)
-		go t.runHandler(handler)
+	t.messageCh = make(chan []byte)
+
+	go t.conn.Connect()
+	go t.receiveMessage()
+	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
+		go t.handleMessage()
 	}
-	go t.distributeMessages()
 	// Waiting for ready.
 	time.Sleep(1 * time.Second)
 
@@ -77,7 +79,7 @@ func (t *Trigger) Stop() error {
 	return nil
 }
 
-func (t *Trigger) distributeMessages() {
+func (t *Trigger) receiveMessage() {
 	for {
 		select {
 		case <-t.shutdown:
@@ -85,30 +87,36 @@ func (t *Trigger) distributeMessages() {
 		default:
 		}
 		if buff := t.conn.Read(); buff != nil {
-			for _, msgCh := range t.msgChs {
-				select {
-				case msgCh <- buff:
-				default:
-					<-msgCh
-					msgCh <- buff
-				}
-			}
+			t.messageCh <- buff
 		}
 	}
 }
 
-func (t *Trigger) runHandler(handler trigger.Handler) {
-	msgCh := t.msgChs[handler.Name()]
+func (t *Trigger) handleMessage() {
 	for {
 		select {
 		case <-t.shutdown:
 			return
-		case buff := <-msgCh:
-			var output Output
-			output.Message = string(buff)
-			if _, err := handler.Handle(context.Background(), output); err != nil {
-				t.logger.Errorf("run action for handler [%s] failed for reason [%s] message lost", handler.Name(), err)
+		case buff := <-t.messageCh:
+			var data map[string]interface{}
+			if err := json.Unmarshal(buff, &data); err != nil {
+				continue
 			}
+
+			var wg sync.WaitGroup
+			wg.Add(len(t.handlers))
+			for _, handler := range t.handlers {
+				go func(handler trigger.Handler) {
+					defer wg.Done()
+					_, err := handler.Handle(context.Background(), data)
+					if err != nil {
+						t.logger.Errorf("run action for handler [%s] failed for reason [%s] message lost", handler.Name(), err)
+					}
+				}(handler)
+			}
+			wg.Wait()
+
+			t.conn.Write(BuildAck(buff))
 		}
 	}
 }

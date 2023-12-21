@@ -6,7 +6,6 @@ import (
 
 type GeneralResponse struct {
 	Cmd       string `json:"cmd"`
-	EventType string `json:"event_type"`
 	ErrorCode int    `json:"error_code"`
 	Message   string `json:"msg"`
 }
@@ -43,51 +42,6 @@ type AckRequest struct {
 	DeliveryId int64  `json:"delivery_id"`
 }
 
-type EventResponse struct {
-	Cmd        string `json:"cmd"`
-	MsgId      string `json:"msg_id"`
-	DeliveryId int64  `json:"delivery_id"`
-}
-
-type OnlineAndOfflineEvent struct {
-	Cmd        string  `json:"cmd"`
-	MsgId      string  `json:"msg_id"`
-	DeliveryId int64   `json:"delivery_id"`
-	EventType  string  `json:"event_type"`
-	ProductKey string  `json:"product_key"`
-	DeviceId   string  `json:"did"`
-	DeviceMac  string  `json:"mac"`
-	CreatedAt  float64 `json:"created_at"`
-}
-
-type FaultAndAlertEvent struct {
-	Cmd        string `json:"cmd"`
-	MsgId      string `json:"msg_id"`
-	DeliveryId string `json:"delivery_id"`
-	EventType  string `json:"event_type"`
-	ProductKey string `json:"product_key"`
-	DeviceId   string `json:"did"`
-	DeviceMac  string `json:"mac"`
-	Data       struct {
-		AttrName        string `json:"attr_name"`
-		AttrDisplayName string `json:"attr_displayname"`
-		Value           int    `json:"value"`
-	} `json:"data"`
-	CreatedAt float64 `json:"created_at"`
-}
-
-type KeyValueEvent struct {
-	Cmd        string                 `json:"cmd"`
-	MsgId      string                 `json:"msg_id"`
-	DeliveryId string                 `json:"delivery_id"`
-	EventType  string                 `json:"event_type"`
-	ProductKey string                 `json:"product_key"`
-	DeviceId   string                 `json:"did"`
-	DeviceMac  string                 `json:"mac"`
-	Data       map[string]interface{} `json:"data"`
-	CreatedAt  float64                `json:"created_at"`
-}
-
 func Encode(v interface{}) []byte {
 	buff, _ := json.Marshal(v)
 	return append(buff, byte('\n'))
@@ -97,4 +51,11 @@ func Decode(b []byte) GeneralResponse {
 	var v GeneralResponse
 	_ = json.Unmarshal(b, &v)
 	return v
+}
+
+func BuildAck(b []byte) []byte {
+	var ack AckRequest
+	_ = json.Unmarshal(b, &ack)
+	ack.Cmd = "event_ack"
+	return Encode(ack)
 }

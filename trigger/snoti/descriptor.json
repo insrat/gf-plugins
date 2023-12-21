@@ -4,32 +4,27 @@
   "version": "0.1.0",
   "title": "Receive SNoti Messages",
   "author": "Jzhuang <jzhuang@gizwits.com>",
-  "description": "Simple SNoti Trigger",
+  "description": "Gizwits SNoti Trigger. For details, see https://docs.gizwits.com/zh-cn/Cloud/NotificationAPI.html",
   "settings": [
     {
       "name": "brokerUrl",
-      "type": "string",
-      "description": "The SNoti cluster to connect to"
+      "type": "string"
     },
     {
       "name": "authID",
-      "type": "string",
-      "description": "the auth id to use for authentication"
+      "type": "string"
     },
     {
       "name": "authSecret",
-      "type": "string",
-      "description": "the auth secret to use for authentication"
+      "type": "string"
     },
     {
       "name": "productKey",
-      "type": "string",
-      "description": "the subscription product key for message queue"
+      "type": "string"
     },
     {
       "name": "subKey",
-      "type": "string",
-      "description": "the subscription name for message queue"
+      "type": "string"
     }
   ],
   "handler": {
@@ -37,9 +32,40 @@
   },
   "output": [
     {
-      "name": "message",
-      "type": "string",
-      "description": "The message that was consumed"
+      "name": "cmd",
+      "type": "string"
+    },
+    {
+      "name": "msg_id",
+      "type": "string"
+    },
+    {
+      "name": "delivery_id",
+      "type": "integer"
+    },
+    {
+      "name": "event_type",
+      "type": "string"
+    },
+    {
+      "name": "product_key",
+      "type": "string"
+    },
+    {
+      "name": "did",
+      "type": "string"
+    },
+    {
+      "name": "mac",
+      "type": "string"
+    },
+    {
+      "name": "data",
+      "type": "object"
+    },
+    {
+      "name": "created_at",
+      "type": "double"
     }
   ]
 }
