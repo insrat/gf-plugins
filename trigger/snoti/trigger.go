@@ -2,6 +2,7 @@ package snoti
 
 import (
 	"context"
+	"time"
 
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
@@ -63,6 +64,8 @@ func (t *Trigger) Start() error {
 		go t.runHandler(handler)
 	}
 	go t.distributeMessages()
+	// Waiting for ready.
+	time.Sleep(1 * time.Second)
 
 	return nil
 }

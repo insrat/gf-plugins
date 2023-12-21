@@ -11,25 +11,19 @@ import (
 )
 
 const testConfig string = `{
-	"id": "flogo-timer",
-	"ref": "github.com/project-flogo/contrib/trigger/kafka",
+	"id": "flogo-snoti",
+	"ref": "github.com/gf-plugins/trigger/snoti",
 	"settings": {
-	  "brokerUrls": "localhost:9092"
+	  "brokerUrl": "snoti.gizwits.com:2017",
+	  "authID": "EXq7CS1zR+OU9m1qLLVibg",
+	  "authSecret": "5cXh3OPCTyC54PMA96dTOg",
+	  "productKey": "2443f9bc28ef45ffb31d6c5c3b0118e9",
+	  "subKey": "test"
 	},
-	"handlers": [
-	  {
-			"action":{
-				"id":"dummy"
-			},
-			"settings": {
-		  	"topic": "syslog"
-			}
-	  }
-	]
-	
+	"handlers": []
   }`
 
-func TestKafkaTrigger_Initialize(t *testing.T) {
+func TestSNotiTrigger_Initialize(t *testing.T) {
 	f := &Factory{}
 
 	config := &trigger.Config{}
