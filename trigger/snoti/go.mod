@@ -6,3 +6,5 @@ require (
 	github.com/project-flogo/core v1.6.7
 	github.com/stretchr/testify v1.8.4
 )
+
+replace gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0
