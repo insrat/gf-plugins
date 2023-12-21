@@ -1,4 +1,4 @@
-module github.com/gf-plugins/trigger/snoti
+module github.com/insrat/gf-plugins/trigger/snoti
 
 go 1.21.0
 
