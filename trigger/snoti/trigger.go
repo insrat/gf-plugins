@@ -98,8 +98,8 @@ func (t *Trigger) handleMessage() {
 		case <-t.shutdown:
 			return
 		case buff := <-t.messageCh:
-			var data map[string]interface{}
-			if err := json.Unmarshal(buff, &data); err != nil {
+			data := &Output{}
+			if err := json.Unmarshal(buff, data); err != nil {
 				continue
 			}
 

@@ -1,0 +1,30 @@
+{
+	"name": "sceneaction-activity",
+	"type": "flogo:activity",
+	"version": "0.1.0",
+	"title": "Scene Device Report Activity",
+	"author": "Jzhuang <jzhuang@gizwits.com>",
+  	"description": "Flogo Activity For Scene",
+	"settings": [
+		{
+			"name": "redisUrl",
+			"type": "string",
+      		"description" : "Redis URL",
+			"required": true
+		},
+		{
+			"name": "mysqlUrl",
+			"type": "string",
+			"description" : "MySQL URL",
+			"required": true
+		}
+	],
+	"input": [
+		{
+			"name": "sceneIDs",
+			"type": "array",
+			"description" : "Scene ID",
+			"required": true
+		}
+	]
+}

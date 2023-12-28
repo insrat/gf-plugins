@@ -1,0 +1,68 @@
+{
+	"name": "scenedevicereport-activity",
+	"type": "flogo:activity",
+	"version": "0.1.0",
+	"title": "Scene Device Report Activity",
+	"author": "Jzhuang <jzhuang@gizwits.com>",
+  	"description": "Flogo Activity For Scene",
+	"settings": [
+		{
+			"name": "redisUrl",
+			"type": "string",
+      		"description" : "Redis URL",
+			"required": true
+		},
+		{
+			"name": "mysqlUrl",
+			"type": "string",
+			"description" : "MySQL URL",
+			"required": true
+		}
+	],
+	"input": [
+		{
+			"name": "productKey",
+			"type": "string",
+			"description" : "Product key",
+			"required": true
+		},
+		{
+			"name": "deviceId",
+			"type": "string",
+			"description" : "Device ID",
+			"required": true
+		},
+		{
+			"name": "deviceMac",
+			"type": "string",
+			"description" : "Device MAC",
+			"required": true
+		},
+		{
+			"name": "eventType",
+			"type": "string",
+			"description" : "Event type",
+			"required": true
+		},
+		{
+			"name": "eventData",
+			"type": "object",
+			"description" : "Event data",
+			"required": true
+		},
+		{
+			"name": "eventTime",
+			"type": "double",
+			"description" : "Event time",
+			"required": true
+		}
+	],
+	"output": [
+		{
+			"name": "sceneIDs",
+			"type": "array",
+			"description" : "Scene ID",
+			"required": false
+		}
+	]
+}

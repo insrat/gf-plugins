@@ -1,0 +1,30 @@
+{
+	"name": "scenetiming-activity",
+	"type": "flogo:activity",
+	"version": "0.1.0",
+	"title": "Scene Timing Activity",
+	"author": "Jzhuang <jzhuang@gizwits.com>",
+  	"description": "Flogo Activity For Scene",
+	"settings": [
+		{
+			"name": "redisUrl",
+			"type": "string",
+			"description" : "Redis URL",
+			"required": true
+		},
+		{
+			"name": "mysqlUrl",
+			"type": "string",
+			"description" : "MySQL URL",
+			"required": true
+		}
+	],
+	"output": [
+		{
+			"name": "sceneIDs",
+			"type": "array",
+			"description" : "Scene ID",
+			"required": false
+		}
+	]
+}
