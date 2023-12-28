@@ -2,7 +2,7 @@
 	"name": "sceneaction-activity",
 	"type": "flogo:activity",
 	"version": "0.1.0",
-	"title": "Scene Device Report Activity",
+	"title": "Scene Action Activity",
 	"author": "Jzhuang <jzhuang@gizwits.com>",
   	"description": "Flogo Activity For Scene",
 	"settings": [
