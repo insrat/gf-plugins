@@ -32,39 +32,27 @@
   },
   "output": [
     {
-      "name": "cmd",
+      "name": "productKey",
       "type": "string"
     },
     {
-      "name": "msg_id",
+      "name": "deviceId",
       "type": "string"
     },
     {
-      "name": "delivery_id",
+      "name": "deviceMac",
       "type": "integer"
     },
     {
-      "name": "event_type",
+      "name": "eventType",
       "type": "string"
     },
     {
-      "name": "product_key",
-      "type": "string"
-    },
-    {
-      "name": "did",
-      "type": "string"
-    },
-    {
-      "name": "mac",
-      "type": "string"
-    },
-    {
-      "name": "data",
+      "name": "eventData",
       "type": "object"
     },
     {
-      "name": "created_at",
+      "name": "eventTime",
       "type": "double"
     }
   ]
