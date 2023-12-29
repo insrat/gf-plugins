@@ -101,7 +101,9 @@ func (a *Activity) addActions(in *Input) error {
 	for sceneID, actions := range sceneActions {
 		if err = a.task.Push(actions.String()); err != nil {
 			a.logger.Errorf("failed to add auto scene %d task: %v", sceneID, err)
+			continue
 		}
+		a.logger.Infof("add manual scene %d task successfully", sceneID)
 	}
 
 	// Add manual scene actions.
@@ -118,7 +120,9 @@ func (a *Activity) addActions(in *Input) error {
 	for sceneID, actions := range sceneActions {
 		if err = a.task.Push(actions.String()); err != nil {
 			a.logger.Errorf("failed to add manual scene %d task: %v", sceneID, err)
+			continue
 		}
+		a.logger.Infof("add manual scene %d task successfully", sceneID)
 	}
 
 	return nil
@@ -177,32 +181,34 @@ func (a *Activity) getAutoSceneActions(autoSceneIDs []int64) (map[int64]Actions,
 		}
 
 		// Query scene_delay with manual_scene_id.
-		manualRows, err := a.db.Query(fmt.Sprintf("SELECT b.home_id, a.sort, a.delay, a.type, a.manual_scene_id, a.action_id FROM scene_delay a "+
-			"INNER JOIN scene_manual_scene b ON b.id = a.manual_scene_id AND b.deleted = false "+
-			"WHERE a.deleted = false AND a.auto_scene_id is null AND a.manual_scene_id in (%s) "+
-			"ORDER BY a.manual_scene_id ASC, a.sort ASC",
-			intSliceToString(manualSceneIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-		defer manualRows.Close()
-		// Get manual scene actions.
 		manualSceneActions := make(map[int64]Actions)
-		for manualRows.Next() {
-			var action Action
-			err = manualRows.Scan(&action.HomeID, &action.Sort, &action.Delay, &action.Type, &action.ManualSceneID, &action.ActionID)
+		if len(manualSceneIDs) > 0 {
+			manualRows, err := a.db.Query(fmt.Sprintf("SELECT b.home_id, a.sort, a.delay, a.type, a.manual_scene_id, a.action_id FROM scene_delay a "+
+				"INNER JOIN scene_manual_scene b ON b.id = a.manual_scene_id AND b.deleted = false "+
+				"WHERE a.deleted = false AND a.auto_scene_id is null AND a.manual_scene_id in (%s) "+
+				"ORDER BY a.manual_scene_id ASC, a.sort ASC",
+				intSliceToString(manualSceneIDs),
+			))
 			if err != nil {
 				return nil, err
 			}
+			defer manualRows.Close()
+			// Get manual scene actions.
+			for manualRows.Next() {
+				var action Action
+				err = manualRows.Scan(&action.HomeID, &action.Sort, &action.Delay, &action.Type, &action.ManualSceneID, &action.ActionID)
+				if err != nil {
+					return nil, err
+				}
 
-			actions, ok := manualSceneActions[action.ManualSceneID.Int64]
-			if !ok {
-				actions = Actions{}
+				actions, ok := manualSceneActions[action.ManualSceneID.Int64]
+				if !ok {
+					actions = Actions{}
+				}
+				manualSceneActions[action.ManualSceneID.Int64] = append(actions, action)
+
+				actionsIDs = append(actionsIDs, action.ActionID.Int64)
 			}
-			manualSceneActions[action.ManualSceneID.Int64] = append(actions, action)
-
-			actionsIDs = append(actionsIDs, action.ActionID.Int64)
 		}
 
 		actionOperations := make(map[int64]Operation)

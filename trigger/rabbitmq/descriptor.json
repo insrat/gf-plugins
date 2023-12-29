@@ -1,0 +1,69 @@
+{
+  "name": "flogo-rabbitmq",
+  "type": "flogo:trigger",
+  "version": "0.1.0",
+  "title": "Receive RabbitMQ Messages",
+  "author": "Jzhuang <jzhuang@gizwits.com>",
+  "description": "Simple RabbitMQ Trigger",
+  "settings": [
+    {
+      "name": "brokerUrl",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "exchangeName",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "queueName",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "routingKeys",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "prefetchCount",
+      "type": "integer",
+      "required": true
+    },
+    {
+      "name": "noAck",
+      "type": "bool",
+      "required": true
+    }
+  ],
+  "handler": {
+    "settings": []
+  },
+  "output": [
+    {
+      "name": "productKey",
+      "type": "string"
+    },
+    {
+      "name": "deviceId",
+      "type": "string"
+    },
+    {
+      "name": "deviceMac",
+      "type": "integer"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventData",
+      "type": "object"
+    },
+    {
+      "name": "eventTime",
+      "type": "double"
+    }
+  ]
+}

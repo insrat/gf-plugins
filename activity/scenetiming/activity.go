@@ -97,6 +97,7 @@ func (a *Activity) filterScenes() ([]interface{}, error) {
 		// Multi-instance distributed processing
 		time.Sleep(100 * time.Millisecond)
 	}
+	a.logger.Infof("the number of timing %s %s scenes obtained is %d", tt.Format(time.DateTime), tt.Weekday(), len(sceneIDs))
 
 	return sceneIDs, nil
 }

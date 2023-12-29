@@ -131,6 +131,7 @@ func (a *Activity) filterScenes() ([]interface{}, error) {
 		_, err = a.db.Exec(fmt.Sprintf("UPDATE scene_condition_weather SET last_compare = false "+
 			"WHERE id in (%s)", intSliceToString(compareFalseIDs)))
 	}
+	a.logger.Infof("the number of weather scenes obtained is %d", len(sceneIDs))
 
 	return sceneIDs, nil
 }

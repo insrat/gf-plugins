@@ -68,14 +68,17 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return false, err
 	}
 
-	in.EventData, err = a.kvCache.SetObject(in.CacheKey(), in.CacheValue())
-	if err != nil {
-		return false, err
-	}
+	var sceneIDs []interface{}
+	if in.EventType == "device_status_kv" {
+		in.EventData, err = a.kvCache.SetObject(in.CacheKey(), in.CacheValue())
+		if err != nil {
+			return false, err
+		}
 
-	sceneIDs, err := a.filterScenes(in)
-	if err != nil {
-		return false, err
+		sceneIDs, err = a.filterScenes(in)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	output := &Output{SceneIDs: sceneIDs}
@@ -115,31 +118,33 @@ func (a *Activity) filterScenes(in *Input) ([]interface{}, error) {
 			sceneIDs = append(sceneIDs, id)
 		}
 
-		sceneRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.also, b.product_key, b.mac, b.attrs FROM scene_smart_auto_scene a "+
-			"INNER JOIN scene_condition_device_report b ON b.scene_id = a.id AND b.deleted = false "+
-			"INNER JOIN scene_delay c ON c.auto_scene_id = a.id AND c.deleted = false "+
-			"WHERE a.deleted = false AND a.open = true AND a.id in (%s) "+
-			"ORDER BY a.id ASC",
-			intSliceToString(sceneIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-
-		for sceneRows.Next() {
-			var cond Condition
-			if err = sceneRows.Scan(&cond.ID, &cond.IsAlso, &cond.ProductKey, &cond.DeviceMac, &cond.Conditions); err != nil {
-				return nil, err
-			}
-			if err = cond.ToOperations(); err != nil {
+		if len(sceneIDs) > 0 {
+			sceneRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.also, b.product_key, b.mac, b.attrs FROM scene_smart_auto_scene a "+
+				"INNER JOIN scene_condition_device_report b ON b.scene_id = a.id AND b.deleted = false "+
+				"INNER JOIN scene_delay c ON c.auto_scene_id = a.id AND c.deleted = false "+
+				"WHERE a.deleted = false AND a.open = true AND a.id in (%s) "+
+				"ORDER BY a.id ASC",
+				intSliceToString(sceneIDs),
+			))
+			if err != nil {
 				return nil, err
 			}
 
-			conds, ok := conditions[cond.ID]
-			if !ok {
-				conds = Conditions{}
+			for sceneRows.Next() {
+				var cond Condition
+				if err = sceneRows.Scan(&cond.ID, &cond.IsAlso, &cond.ProductKey, &cond.DeviceMac, &cond.Conditions); err != nil {
+					return nil, err
+				}
+				if err = cond.ToOperations(); err != nil {
+					return nil, err
+				}
+
+				conds, ok := conditions[cond.ID]
+				if !ok {
+					conds = Conditions{}
+				}
+				conditions[cond.ID] = append(conds, cond)
 			}
-			conditions[cond.ID] = append(conds, cond)
 		}
 
 		val, _ := json.Marshal(conditions)
@@ -155,6 +160,7 @@ func (a *Activity) filterScenes(in *Input) ([]interface{}, error) {
 			filterIDs = append(filterIDs, sceneID)
 		}
 	}
+	a.logger.Infof("the number of device report scenes obtained is %d", len(filterIDs))
 
 	return filterIDs, nil
 }
@@ -215,7 +221,7 @@ func (c *Cache) GetObject(key string) map[string]interface{} {
 }
 
 func (c *Cache) SetString(key string, value string) error {
-	return c.rdb.SetEx(context.Background(), fmt.Sprintf("%s:%s", c.name, key), value, 1*time.Hour).Err()
+	return c.rdb.SetEx(context.Background(), fmt.Sprintf("%s:%s", c.name, key), value, 5*time.Minute).Err()
 }
 
 func (c *Cache) GetString(key string) (string, error) {
