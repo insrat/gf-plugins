@@ -67,9 +67,10 @@ func (c *Connection) connect() (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func getRabbitMQConnection(settings *Settings) (*Connection, error) {
+func getRabbitMQConnection(logger log.Logger, settings *Settings) (*Connection, error) {
 	newConn := new(Connection)
 	newConn.settings = settings
+	newConn.logger = logger
 
 	var err error
 	// Create connect and channel with broker URL.

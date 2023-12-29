@@ -212,56 +212,58 @@ func (a *Activity) getAutoSceneActions(autoSceneIDs []int64) (map[int64]Actions,
 		}
 
 		actionOperations := make(map[int64]Operation)
-		// Query scene_action and scene_action_ext_control_device with action_id.
-		controlRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, c.product_key, b.group_or_sno, c.attrs FROM scene_action a "+
-			"INNER JOIN scene_action_ext_control_device b ON a.id = b.action_id AND b.deleted = false AND b.control_type = 1 "+
-			"INNER JOIN scene_cmd c ON b.id = c.control_device_id AND c.deleted = false "+
-			"WHERE a.deleted = false AND a.type = 'control' AND a.id in (%s) "+
-			"ORDER BY a.id ASC",
-			intSliceToString(actionsIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-		defer controlRows.Close()
-		// Get action operations about control.
-		for controlRows.Next() {
-			var operation Operation
-			err = controlRows.Scan(&operation.ActionID, &operation.ActionType, &operation.ProductKey, &operation.DeviceSno, &operation.ControlAttrs)
+		if len(actionsIDs) > 0 {
+			// Query scene_action and scene_action_ext_control_device with action_id.
+			controlRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, c.product_key, b.group_or_sno, c.attrs FROM scene_action a "+
+				"INNER JOIN scene_action_ext_control_device b ON a.id = b.action_id AND b.deleted = false AND b.control_type = 1 "+
+				"INNER JOIN scene_cmd c ON b.id = c.control_device_id AND c.deleted = false "+
+				"WHERE a.deleted = false AND a.type = 'control' AND a.id in (%s) "+
+				"ORDER BY a.id ASC",
+				intSliceToString(actionsIDs),
+			))
 			if err != nil {
 				return nil, err
 			}
-			if operation.ControlAttrs.Valid {
-				operation.DeviceAttrs = make(map[string]interface{})
-				_ = json.Unmarshal([]byte(operation.ControlAttrs.String), &operation.DeviceAttrs)
-			}
-			// Merge control attributes into device attributes.
-			if val, ok := actionOperations[operation.ActionID]; ok {
-				for key, value := range val.DeviceAttrs {
-					operation.DeviceAttrs[key] = value
+			defer controlRows.Close()
+			// Get action operations about control.
+			for controlRows.Next() {
+				var operation Operation
+				err = controlRows.Scan(&operation.ActionID, &operation.ActionType, &operation.ProductKey, &operation.DeviceSno, &operation.ControlAttrs)
+				if err != nil {
+					return nil, err
 				}
+				if operation.ControlAttrs.Valid {
+					operation.DeviceAttrs = make(map[string]interface{})
+					_ = json.Unmarshal([]byte(operation.ControlAttrs.String), &operation.DeviceAttrs)
+				}
+				// Merge control attributes into device attributes.
+				if val, ok := actionOperations[operation.ActionID]; ok {
+					for key, value := range val.DeviceAttrs {
+						operation.DeviceAttrs[key] = value
+					}
+				}
+				actionOperations[operation.ActionID] = operation
 			}
-			actionOperations[operation.ActionID] = operation
-		}
 
-		// Query scene_action and scene_action_ext_control_device with action_id.
-		noticeRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, b.notice_type, b.targets FROM scene_action a "+
-			"INNER JOIN scene_action_ext_notice b ON a.id = b.action_id AND b.deleted = false "+
-			"WHERE a.deleted = false AND a.type = 'notice' and a.id in (%s)",
-			intSliceToString(actionsIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-		defer noticeRows.Close()
-		// Get action operations about notice.
-		for noticeRows.Next() {
-			var operation Operation
-			err = noticeRows.Scan(&operation.ActionID, &operation.ActionType, &operation.NoticeType, &operation.NoticeTargets)
+			// Query scene_action and scene_action_ext_control_device with action_id.
+			noticeRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, b.notice_type, b.targets FROM scene_action a "+
+				"INNER JOIN scene_action_ext_notice b ON a.id = b.action_id AND b.deleted = false "+
+				"WHERE a.deleted = false AND a.type = 'notice' and a.id in (%s)",
+				intSliceToString(actionsIDs),
+			))
 			if err != nil {
 				return nil, err
 			}
-			actionOperations[operation.ActionID] = operation
+			defer noticeRows.Close()
+			// Get action operations about notice.
+			for noticeRows.Next() {
+				var operation Operation
+				err = noticeRows.Scan(&operation.ActionID, &operation.ActionType, &operation.NoticeType, &operation.NoticeTargets)
+				if err != nil {
+					return nil, err
+				}
+				actionOperations[operation.ActionID] = operation
+			}
 		}
 
 		// Build auto scene actions.
@@ -349,58 +351,59 @@ func (a *Activity) getManualSceneActions(manualSceneIDs []int64) (map[int64]Acti
 		}
 
 		actionOperations := make(map[int64]Operation)
-		// Query scene_action and scene_action_ext_control_device with action_id.
-		controlRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, c.product_key, b.group_or_sno, c.attrs FROM scene_action a "+
-			"INNER JOIN scene_action_ext_control_device b ON a.id = b.action_id AND b.deleted = false AND b.control_type = 1 "+
-			"INNER JOIN scene_cmd c ON b.id = c.control_device_id AND c.deleted = false "+
-			"WHERE a.deleted = false AND a.type = 'control' AND a.id in (%s) "+
-			"ORDER BY a.id ASC",
-			intSliceToString(actionsIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-		defer controlRows.Close()
-		// Get action operations about control.
-		for controlRows.Next() {
-			var operation Operation
-			err = controlRows.Scan(&operation.ActionID, &operation.ActionType, &operation.ProductKey, &operation.DeviceSno, &operation.ControlAttrs)
+		if len(actionsIDs) > 0 {
+			// Query scene_action and scene_action_ext_control_device with action_id.
+			controlRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, c.product_key, b.group_or_sno, c.attrs FROM scene_action a "+
+				"INNER JOIN scene_action_ext_control_device b ON a.id = b.action_id AND b.deleted = false AND b.control_type = 1 "+
+				"INNER JOIN scene_cmd c ON b.id = c.control_device_id AND c.deleted = false "+
+				"WHERE a.deleted = false AND a.type = 'control' AND a.id in (%s) "+
+				"ORDER BY a.id ASC",
+				intSliceToString(actionsIDs),
+			))
 			if err != nil {
 				return nil, err
 			}
-			if operation.ControlAttrs.Valid {
-				operation.DeviceAttrs = make(map[string]interface{})
-				_ = json.Unmarshal([]byte(operation.ControlAttrs.String), &operation.DeviceAttrs)
-			}
-			// Merge control attributes into device attributes.
-			if val, ok := actionOperations[operation.ActionID]; ok {
-				for key, value := range val.DeviceAttrs {
-					operation.DeviceAttrs[key] = value
+			defer controlRows.Close()
+			// Get action operations about control.
+			for controlRows.Next() {
+				var operation Operation
+				err = controlRows.Scan(&operation.ActionID, &operation.ActionType, &operation.ProductKey, &operation.DeviceSno, &operation.ControlAttrs)
+				if err != nil {
+					return nil, err
 				}
+				if operation.ControlAttrs.Valid {
+					operation.DeviceAttrs = make(map[string]interface{})
+					_ = json.Unmarshal([]byte(operation.ControlAttrs.String), &operation.DeviceAttrs)
+				}
+				// Merge control attributes into device attributes.
+				if val, ok := actionOperations[operation.ActionID]; ok {
+					for key, value := range val.DeviceAttrs {
+						operation.DeviceAttrs[key] = value
+					}
+				}
+				actionOperations[operation.ActionID] = operation
 			}
-			actionOperations[operation.ActionID] = operation
-		}
 
-		// Query scene_action and scene_action_ext_control_device with action_id.
-		noticeRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, b.notice_type, b.targets FROM scene_action a "+
-			"INNER JOIN scene_action_ext_notice b ON a.id = b.action_id AND b.deleted = false "+
-			"WHERE a.deleted = false AND a.type = 'notice' and a.id in (%s)",
-			intSliceToString(actionsIDs),
-		))
-		if err != nil {
-			return nil, err
-		}
-		defer noticeRows.Close()
-		// Get action operations about notice.
-		for noticeRows.Next() {
-			var operation Operation
-			err = noticeRows.Scan(&operation.ActionID, &operation.ActionType, &operation.NoticeType, &operation.NoticeTargets)
+			// Query scene_action and scene_action_ext_control_device with action_id.
+			noticeRows, err := a.db.Query(fmt.Sprintf("SELECT a.id, a.type, b.notice_type, b.targets FROM scene_action a "+
+				"INNER JOIN scene_action_ext_notice b ON a.id = b.action_id AND b.deleted = false "+
+				"WHERE a.deleted = false AND a.type = 'notice' and a.id in (%s)",
+				intSliceToString(actionsIDs),
+			))
 			if err != nil {
 				return nil, err
 			}
-			actionOperations[operation.ActionID] = operation
+			defer noticeRows.Close()
+			// Get action operations about notice.
+			for noticeRows.Next() {
+				var operation Operation
+				err = noticeRows.Scan(&operation.ActionID, &operation.ActionType, &operation.NoticeType, &operation.NoticeTargets)
+				if err != nil {
+					return nil, err
+				}
+				actionOperations[operation.ActionID] = operation
+			}
 		}
-		fmt.Println(actionOperations)
 
 		// Build auto scene actions.
 		for sceneID, sceneActions := range manualSceneActions {

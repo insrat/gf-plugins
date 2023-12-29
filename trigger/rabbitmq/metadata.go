@@ -14,9 +14,6 @@ type Settings struct {
 }
 
 type Output struct {
-	Cmd        string                 `json:"cmd"`
-	MessageID  string                 `json:"msg_id"`
-	DeliveryID int64                  `json:"delivery_id"`
 	ProductKey string                 `md:"productKey" json:"product_key"`
 	DeviceID   string                 `md:"deviceId" json:"did"`
 	DeviceMac  string                 `md:"deviceMac" json:"mac"`

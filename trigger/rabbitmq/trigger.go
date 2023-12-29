@@ -48,13 +48,9 @@ type Trigger struct {
 
 // Initialize initializes the trigger
 func (t *Trigger) Initialize(ctx trigger.InitContext) (err error) {
-	if t.conn, err = getRabbitMQConnection(t.settings); err != nil {
-		return
-	}
-
 	t.handlers = ctx.GetHandlers()
 	t.logger = ctx.Logger()
-
+	t.conn, err = getRabbitMQConnection(t.logger, t.settings)
 	return
 }
 
